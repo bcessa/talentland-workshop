@@ -1,0 +1,68 @@
+otel:
+  enabled: true # if disabled, no telemetry will be collected
+  service_name: "echo-service"
+  service_version: "0.1.0"
+  metrics_host: true
+  metrics_runtime: true
+  collector:
+    endpoint: "" # if not provided, output will be discarded
+    protocol: grpc
+  attributes:
+    environment: dev
+  sentry:
+    dsn: "" # if not provided, output will be discarded
+    environment: dev
+    performance_monitoring: true
+    traces_sample_rate: 1.0
+    profiling_sample_rate: 0.5
+rpc:
+  port: 9090
+  network_interface: all
+  unix_socket: ""
+  input_validation: true
+  reflection: true
+  resource_limits:
+    connections: 1000
+    requests: 50
+    rate: 500
+  tls:
+    enabled: false
+    system_ca: true
+    cert: tls.crt
+    key: tls.key
+    custom_ca: []
+    auth_ca: []
+  http:
+    enabled: true
+    middleware:
+      # support PROXY headers
+      proxy_protocol: true
+      # between 1 and 9; 0 to disable
+      gzip: 5
+      # custom headers return on every response
+      headers:
+        - x-app-environment: dev
+      # opentelemetry instrumentation
+      otel:
+        enabled: true
+        trace_header: "x-request-id"
+      # settings for: Cross-Origin-Request-Support
+      cors:
+        max_age: 20
+        allowed_origins:
+          - "*"
+        allowed_headers:
+          - authorization
+          - content-type
+          - baggage
+          - traceparent
+          - tracestate
+          - sentry-trace
+        exposed_headers:
+          - authorization
+          - content-type
+          - baggage
+          - traceparent
+          - tracestate
+          - sentry-trace
+          - x-api-key

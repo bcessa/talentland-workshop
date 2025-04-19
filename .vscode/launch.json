@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug server (docker)",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "debugAdapter": "dlv-dap",
+      "port": 2345,
+      "host": "127.0.0.1",
+      "showLog": true,
+      "trace": "log",
+      "logOutput": "rpc",
+      "internalConsoleOptions": "openOnSessionStart",
+      "substitutePath": [
+        {
+          "from": "${workspaceFolder}",
+          "to": "/go/src"
+        }
+      ]
+    },
+    {
+      "name": "Run server",
+      "type": "go",
+      "request": "launch",
+      "program": "${workspaceFolder}/cli/main.go",
+      "args": ["server", "--config=${workspaceFolder}/config.yaml"],
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

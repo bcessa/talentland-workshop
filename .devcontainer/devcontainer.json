@@ -1,0 +1,4 @@
+{
+  "name": "Go 1.22",
+  "image": "ghcr.io/bryk-io/devcontainer-go:1.22"
+}

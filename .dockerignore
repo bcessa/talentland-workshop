@@ -1,0 +1,9 @@
+.git
+.cache
+.github
+.devcontainer
+.vscode
+helm
+local-env
+tmp
+vendor

@@ -1,0 +1,179 @@
+# main project name value
+# https://goreleaser.com/customization/project/
+project_name: echo-service
+# produced artifacts are stored in this folder
+dist: dist
+# customize execution
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+    - docker login ghcr.io -u {{ .Env.GITHUB_USER }} -p {{ .Env.GITHUB_TOKEN }}
+# artifacts to produce
+# https://goreleaser.com/customization/build/
+builds:
+  # a single project can support/require several build targets
+  - id: echoctl
+    # main binary name
+    binary: echoctl
+    # code entrypoint
+    main: ./cli/main.go
+    # CLI flags for the 'go build' command
+    flags:
+      - -v
+    ldflags:
+      - -s -w
+    # set the modified timestamp on the output binary to ensure a
+    # reproducible build
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    # disable CGO since it's not supported
+    env:
+      - CGO_ENABLED=0
+    # supported OSs
+    goos:
+      - linux
+      - windows
+      - darwin
+    # supported architectures
+    goarch:
+      - amd64
+# packages to produce
+# https://goreleaser.com/customization/archive/
+archives:
+  # a single project can produce multiple archives
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+# generate integrity checksums
+# https://goreleaser.com/customization/checksum/
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+# Include source code package on the release
+# https://goreleaser.com/customization/source/
+source:
+  enabled: true
+# produce test releases
+# https://goreleaser.com/customization/snapshots/
+snapshot:
+  name_template: "{{ .Version }}-next"
+# linux packages
+# https://goreleaser.com/customization/nfpm/
+nfpms:
+  - package_name: "{{ .ProjectName }}"
+    # package description
+    description: Add a brief but descriptive paragraph about the application.
+    # app's vendor
+    vendor: Acme Inc.
+    # app's homepage
+    homepage: "https://github.com/bcessa/echo-service"
+    # app's license
+    license: BSD-3-Clause
+    # app's maintainer (probably you)
+    maintainer: Rick <rick@acme.com>
+    # path that the binaries should be installed
+    bindir: /usr/bin
+    # build IDs to gather the binaries from
+    builds:
+      - echoctl
+    # formats to be generated
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+    # packages provided by the application
+    provides:
+      - echoctl
+# build and publish docker images
+# https://goreleaser.com/customization/docker/
+dockers:
+  - # Build IDs to gather the binaries from
+    ids:
+      - echoctl
+    # GOOS of the built binary that should be used
+    goos: linux
+    # GOARCH of the built binary that should be used
+    goarch: amd64
+    # Dockerfile location
+    dockerfile: Dockerfile
+    # OCI image tags
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .CommitDate }}"
+      - "--label=org.opencontainers.image.source=https://github.com/bcessa/echo-service"
+      - "--build-arg=GOMOD={{ .Env.GOMOD }}"
+    # Registries to push the image to
+    image_templates:
+      - "ghcr.io/bcessa/{{ .ProjectName }}:{{ .Version }}"
+      - "ghcr.io/bcessa/{{ .ProjectName }}:{{ .Major }}"
+      - "ghcr.io/bcessa/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/bcessa/{{ .ProjectName }}:latest"
+    # Skips the docker push if there is an indicator for prerelease
+    # in the tag e.g. v1.0.0-rc1 (auto)
+    skip_push: auto
+    # Additional files to add/copy into the container image. Wildcards
+    # are not supported.
+    extra_files:
+      - cli
+      - handler
+      - internal
+      - proto
+# configure the 'CHANGELOG.md' file produced
+# standard commit messages can help to produce better changelogs
+# https://www.conventionalcommits.org/en/v1.0.0/
+# https://goreleaser.com/customization/release/#customize-the-changelog
+changelog:
+  # Sorts the changelog by commit messages (asc, desc or '')
+  sort: ""
+  # - git: uses `git log`;
+  # - github: uses the compare GitHub API, appending the author login to the changelog.
+  # - gitlab: uses the compare GitLab API, appending the author name and email to the changelog.
+  # - github-native: uses the GitHub release notes generation API, disables the groups feature.
+  use: github
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: "Bug fixes"
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: Others
+      order: 999
+  # Remove certain commit messages from the changelog
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^typo:"
+# Produce homebrew formulas for the project artifacts
+# https://goreleaser.com/customization/homebrew/
+brews:
+  - # Formula name
+    name: echoctl
+    # Push the formula to the tap repository
+    skip_upload: true
+    # TAP repository
+    repository:
+      owner: bcessa
+      name: homebrew-tap
+    # Use 'github-actions' as commit author
+    # https://github.community/t/github-actions-bot-email-address/17204
+    commit_author:
+      name: github-actions
+      email: 41898282+github-actions[bot]@users.noreply.github.com
+    # Project details
+    homepage: "https://github.com/bcessa/echo-service"
+    description: |
+      Add a brief but descriptive paragraph about the application.
+    install: |
+      bin.install "echoctl"
+      output = Utils.popen_read("#{bin}/echoctl completion bash")
+      (bash_completion/"echoctl").write output
+      output = Utils.popen_read("#{bin}/echoctl completion zsh")
+      (zsh_completion/"_echoctl").write output
+      prefix.install_metafiles
+    test: |
+      system "#{bin}/echoctl version"

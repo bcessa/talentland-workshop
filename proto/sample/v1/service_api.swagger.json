@@ -1,0 +1,251 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Sample service",
+    "version": "0.1.0",
+    "contact": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    }
+  },
+  "tags": [
+    {
+      "name": "ServiceAPI"
+    }
+  ],
+  "host": "localhost:9090",
+  "schemes": [
+    "http",
+    "https",
+    "wss"
+  ],
+  "consumes": [
+    "application/json",
+    "application/protobuf"
+  ],
+  "produces": [
+    "application/json",
+    "application/protobuf"
+  ],
+  "paths": {
+    "/v1/echo/faulty": {
+      "post": {
+        "summary": "Returns an error roughly about 50% of the time.",
+        "operationId": "ServiceAPI_Faulty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DummyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ServiceAPI"
+        ]
+      }
+    },
+    "/v1/echo/request": {
+      "post": {
+        "summary": "Process an incoming echo request.",
+        "operationId": "ServiceAPI_Echo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EchoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Sample request for the \"echo\" service.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EchoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ServiceAPI"
+        ]
+      }
+    },
+    "/v1/echo/slow": {
+      "post": {
+        "summary": "Exhibit a random latency between 10 and 200ms.",
+        "operationId": "ServiceAPI_Slow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DummyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ServiceAPI"
+        ]
+      }
+    },
+    "/v1/ping": {
+      "get": {
+        "summary": "Reachability probe.",
+        "operationId": "ServiceAPI_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ServiceAPI"
+        ]
+      }
+    },
+    "/v1/ready": {
+      "get": {
+        "summary": "Readiness probe.",
+        "operationId": "ServiceAPI_Ready",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReadyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ServiceAPI"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1DummyResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "Generic status check, set to 'false' in case of errors."
+        }
+      },
+      "description": "Sample response structure."
+    },
+    "v1EchoRequest": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Payload submitted to the \"echo\" request."
+        }
+      },
+      "description": "Sample request for the \"echo\" service."
+    },
+    "v1EchoResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string",
+          "description": "Result generated by the server."
+        }
+      },
+      "description": "The response generated by the \"echo\" server."
+    },
+    "v1PingResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "Generic reachability test, should never return \"false\"."
+        }
+      },
+      "description": "Sample reachability response."
+    },
+    "v1ReadyResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "Returns \"true\" if the service is ready to receive and handle\nrequests."
+        }
+      },
+      "description": "Sample readiness response."
+    }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "description": "Authentication token provided as: 'Bearer {token}'",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
+}

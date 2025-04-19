@@ -1,0 +1,121 @@
+version: "2"
+run:
+  modules-download-mode: readonly
+  issues-exit-code: 1
+  tests: true
+linters:
+  enable:
+    - asciicheck
+    - bodyclose
+    - copyloopvar
+    - durationcheck
+    - errorlint
+    - exhaustive
+    - forcetypeassert
+    - funlen
+    - goconst
+    - gocyclo
+    - godot
+    - gosec
+    - lll
+    - misspell
+    - nakedret
+    - nestif
+    - noctx
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - whitespace
+  disable:
+    - depguard
+    - dupl
+    - unused
+    - wastedassign
+  settings:
+    dupl:
+      threshold: 150
+    errcheck:
+      disable-default-exclusions: false
+      check-type-assertions: true
+      check-blank: false
+      exclude-functions:
+        - (io.Closer).Close
+        - (net/http.ResponseWriter).Write
+        - (strings.Builder).WriteByte
+        - (strings.Builder).WriteString
+    exhaustive:
+      default-signifies-exhaustive: true
+    funlen:
+      lines: 90
+      statements: 70
+    goconst:
+      min-len: 3
+      min-occurrences: 5
+    gocyclo:
+      min-complexity: 18
+    gosec:
+      excludes:
+        - G115
+    govet:
+      enable:
+        - atomic
+        - atomicalign
+        - buildtag
+        - cgocall
+        - composites
+        - copylocks
+        - httpresponse
+        - loopclosure
+        - lostcancel
+        - nilfunc
+        - shift
+        - structtag
+        - unmarshal
+        - unreachable
+        - unusedresult
+        - tests
+    lll:
+      line-length: 120
+      tab-width: 2
+    misspell:
+      locale: US
+    nakedret:
+      max-func-lines: 40
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: false
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupl
+          - errcheck
+          - funlen
+          - gocyclo
+          - gosec
+          - lll
+          - nakedret
+          - nestif
+          - noctx
+          - revive
+        path: (.+)_test.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+  settings:
+    gofmt:
+      simplify: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
